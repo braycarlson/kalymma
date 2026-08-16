@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-<defs></defs>
-<rect width="512" height="512" fill="#14B87A"></rect>
-<text class="wm" x="256" y="256" font-size="332.8" fill="#062018" text-anchor="middle" dominant-baseline="central">k</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="#14B87A"></rect><path d="M174.68 369.33L174.68 142.67L220.58 142.67L220.58 264.5L234.18 264.5L281.78 199.33L330.52 199.33L330.52 201.03L272.43 278.67L337.32 367.63L337.32 369.33L283.77 369.33L234.18 298.5L220.58 298.5L220.58 369.33L174.68 369.33Z" fill="#062018"></path></svg>
