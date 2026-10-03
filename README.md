@@ -14,7 +14,7 @@
 
 <p align="center">
     <a href="https://github.com/braycarlson/kalymma/actions/workflows/ci.yml"><img alt="ci" src="https://img.shields.io/github/actions/workflow/status/braycarlson/kalymma/ci.yml?branch=main&amp;style=flat-square&amp;label=ci"></a>
-    <a href="https://ziglang.org"><img alt="zig" src="https://img.shields.io/badge/zig-0.16.0-orange.svg?style=flat-square"></a>
+    <a href="https://ziglang.org"><img alt="zig" src="https://img.shields.io/badge/zig-0.17.0-orange.svg?style=flat-square"></a>
     <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square"></a>
 </p>
 
@@ -57,7 +57,7 @@ const kalymma = b.dependency("kalymma", .{
 exe.root_module.addImport("kalymma", kalymma.module("kalymma"));
 ```
 
-kalymma requires Zig 0.16.0.
+kalymma requires Zig 0.17.0.
 
 ## Usage
 

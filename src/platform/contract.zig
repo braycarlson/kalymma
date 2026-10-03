@@ -29,7 +29,7 @@ pub const Capabilities = struct {
     present: bool,
 };
 
-pub const capability_count: u8 = @typeInfo(Capabilities).@"struct".fields.len;
+pub const capability_count: u8 = @typeInfo(Capabilities).@"struct".field_names.len;
 
 pub const Anchor = enum(u8) {
     bottom_right = 0,
@@ -37,7 +37,7 @@ pub const Anchor = enum(u8) {
     center = 2,
 
     pub fn is_valid(anchor: Anchor) bool {
-        return @intFromEnum(anchor) <= @intFromEnum(Anchor.center);
+        return @backingInt(anchor) <= @backingInt(Anchor.center);
     }
 };
 
@@ -51,7 +51,7 @@ pub const Key = enum(u8) {
     down = 6,
     other = 7,
     pub fn is_valid(anchor: Key) bool {
-        return @intFromEnum(anchor) <= @intFromEnum(Key.other);
+        return @backingInt(anchor) <= @backingInt(Key.other);
     }
 };
 
@@ -621,7 +621,8 @@ test "a configuration outside the contract bounds is refused" {
 test "a runtime configuration needs a bounded name" {
     const good = RuntimeConfig{ .name = "mute" };
     const empty = RuntimeConfig{ .name = "" };
-    const long = RuntimeConfig{ .name = "x" ** (name_bytes_max + 1) };
+    const name_long: [name_bytes_max + 1]u8 = @splat('x');
+    const long = RuntimeConfig{ .name = &name_long };
 
     try testing.expect(good.is_valid());
     try testing.expect(!empty.is_valid());
@@ -695,8 +696,9 @@ test "a slot remembers its name and sizes its frame" {
 
 test "an over long surface name is truncated rather than overflowing" {
     var slot = Slot{};
+    const name_long: [name_bytes_max + 32]u8 = @splat('n');
 
-    slot.set_name("n" ** (name_bytes_max + 32));
+    slot.set_name(&name_long);
 
     try testing.expectEqual(@as(u16, name_bytes_max), slot.name_len);
 }

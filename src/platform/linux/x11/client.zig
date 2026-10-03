@@ -859,11 +859,11 @@ fn allocate() u32 {
 }
 
 pub fn display_number(display: []const u8) []const u8 {
-    const colon = std.mem.lastIndexOfScalar(u8, display, ':') orelse return "";
+    const colon = std.mem.findScalarLast(u8, display, ':') orelse return "";
 
     const tail = display[colon + 1 ..];
 
-    const dot = std.mem.indexOfScalar(u8, tail, '.') orelse return tail;
+    const dot = std.mem.findScalar(u8, tail, '.') orelse return tail;
 
     return tail[0..dot];
 }
@@ -877,7 +877,7 @@ pub fn resolve_socket(storage: []u8, display: []const u8) Error![]const u8 {
         return Error.Unavailable;
     }
 
-    const result = std.fmt.bufPrint(storage, "/tmp/.X11-unix/X{s}", .{number}) catch {
+    const result = std.mem.print(storage, "/tmp/.X11-unix/X{s}", .{number}) catch {
         return Error.Unavailable;
     };
 

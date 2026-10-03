@@ -505,7 +505,7 @@ fn consume() void {
 
     const remainder = fill - offset;
 
-    std.mem.copyForwards(u8, reads[0..remainder], reads[offset..fill]);
+    @memmove(reads[0..remainder], reads[offset..fill]);
 
     fill = remainder;
 }
@@ -921,7 +921,7 @@ pub fn resolve_socket(storage: []u8) Error![]const u8 {
         return Error.Unavailable;
     };
 
-    const result = std.fmt.bufPrint(storage, "{s}/{s}", .{ directory, display }) catch {
+    const result = std.mem.print(storage, "{s}/{s}", .{ directory, display }) catch {
         return Error.Unavailable;
     };
 
@@ -938,7 +938,7 @@ test "a socket path is built from the runtime directory and the display name" {
     };
 
     try testing.expect(resolved.len > 0);
-    try testing.expect(std.mem.indexOfScalar(u8, resolved, '/') != null);
+    try testing.expect(std.mem.findScalar(u8, resolved, '/') != null);
 }
 
 test "a storage buffer too small for the socket path is refused" {

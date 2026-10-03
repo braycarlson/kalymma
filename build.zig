@@ -42,20 +42,16 @@ comptime {
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
-    const steps = Steps{
-        .check = b.step("check", "Compile every artifact without running it"),
-        .ci = b.step("ci", "Run formatting, compilation and every available suite"),
-        .test_all = b.step("test", "Run every available suite and the formatting check"),
-        .test_fmt = b.step("test:fmt", "Check that every source file is formatted"),
-        .test_linux = b.step("test:linux", "Run the display tests on a Linux host"),
-        .test_mock = b.step("test:mock", "Run the full pipeline against the mock backend"),
-        .test_unit = b.step("test:unit", "Run the colocated unit tests and the tidy law"),
-        .test_windows = b.step("test:windows", "Run the layered window tests on Windows"),
-    };
+    const steps = create_steps(b);
 
     const backend = b.option(Backend, "backend", "Backend selection: native or mock") orelse
         .native;
+
+    const filters = b.option(
+        []const []const u8,
+        "test-filter",
+        "Skip tests that do not match any filter",
+    ) orelse &.{};
 
     const build_options = create_options(b, backend == .mock);
     const mock_build_options = create_options(b, true);
@@ -71,10 +67,29 @@ pub fn build(b: *std.Build) void {
     link_platform(kalymma, target);
 
     add_format(b, &steps);
-    add_suite(b, steps.test_unit, &steps, mock_build_options, "src/unit_tests.zig", optimize);
-    add_suite(b, steps.test_mock, &steps, mock_build_options, "src/mock_tests.zig", optimize);
-    add_linux_tests(b, &steps, optimize);
-    add_windows_tests(b, &steps, target, optimize);
+
+    add_suite(
+        b,
+        steps.test_unit,
+        &steps,
+        mock_build_options,
+        "src/unit_tests.zig",
+        optimize,
+        filters,
+    );
+
+    add_suite(
+        b,
+        steps.test_mock,
+        &steps,
+        mock_build_options,
+        "src/mock_tests.zig",
+        optimize,
+        filters,
+    );
+
+    add_linux_tests(b, &steps, optimize, filters);
+    add_windows_tests(b, &steps, target, optimize, filters);
     add_cross_check(b, &steps, optimize);
 
     steps.ci.dependOn(steps.test_fmt);
@@ -85,6 +100,19 @@ pub fn build(b: *std.Build) void {
     steps.ci.dependOn(steps.test_windows);
 
     b.default_step.dependOn(steps.check);
+}
+
+fn create_steps(b: *std.Build) Steps {
+    return .{
+        .check = b.step("check", "Compile every artifact without running it"),
+        .ci = b.step("ci", "Run formatting, compilation and every available suite"),
+        .test_all = b.step("test", "Run every available suite and the formatting check"),
+        .test_fmt = b.step("test:fmt", "Check that every source file is formatted"),
+        .test_linux = b.step("test:linux", "Run the display tests on a Linux host"),
+        .test_mock = b.step("test:mock", "Run the full pipeline against the mock backend"),
+        .test_unit = b.step("test:unit", "Run the colocated unit tests and the tidy law"),
+        .test_windows = b.step("test:windows", "Run the layered window tests on Windows"),
+    };
 }
 
 fn create_options(b: *std.Build, mock: bool) *std.Build.Module {
@@ -98,7 +126,7 @@ fn create_options(b: *std.Build, mock: bool) *std.Build.Module {
 
 fn add_format(b: *std.Build, steps: *const Steps) void {
     const fmt = b.addFmt(.{
-        .paths = &format_paths,
+        .paths = b.pathList(&format_paths),
         .check = true,
     });
 
@@ -112,7 +140,8 @@ fn add_suite(
     steps: *const Steps,
     build_options: *std.Build.Module,
     root: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
+    filters: []const []const u8,
 ) void {
     const module = b.createModule(.{
         .root_source_file = b.path(root),
@@ -125,7 +154,7 @@ fn add_suite(
 
     const suite = b.addTest(.{
         .root_module = module,
-        .filters = b.args orelse &.{},
+        .filters = filters,
     });
 
     const run = b.addRunArtifact(suite);
@@ -141,7 +170,8 @@ fn add_suite(
 fn add_linux_tests(
     b: *std.Build,
     steps: *const Steps,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
+    filters: []const []const u8,
 ) void {
     const resolved = if (b.graph.host.result.os.tag == .linux)
         b.graph.host
@@ -157,7 +187,7 @@ fn add_linux_tests(
 
     const suite = b.addTest(.{
         .root_module = module,
-        .filters = b.args orelse &.{},
+        .filters = filters,
     });
 
     steps.check.dependOn(&suite.step);
@@ -178,7 +208,8 @@ fn add_windows_tests(
     b: *std.Build,
     steps: *const Steps,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
+    filters: []const []const u8,
 ) void {
     const resolved = if (target.result.os.tag == .windows)
         target
@@ -196,7 +227,7 @@ fn add_windows_tests(
 
     const suite = b.addTest(.{
         .root_module = module,
-        .filters = b.args orelse &.{},
+        .filters = filters,
     });
 
     steps.check.dependOn(&suite.step);
@@ -216,7 +247,7 @@ fn add_windows_tests(
 fn add_cross_check(
     b: *std.Build,
     steps: *const Steps,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) void {
     const queries = [_]std.Target.Query{ linux_query, windows_query };
 

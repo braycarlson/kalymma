@@ -54,7 +54,7 @@ var pending_index: u16 = 0;
 var pending_ok: bool = false;
 var queue: EventQueue = .{};
 var ready: std.atomic.Value(u32) = std.atomic.Value(u32).init(0);
-var status: std.atomic.Value(u8) = std.atomic.Value(u8).init(@intFromEnum(Status.idle));
+var status: std.atomic.Value(u8) = std.atomic.Value(u8).init(@backingInt(Status.idle));
 var subscriber: ?EventCallback = null;
 var subscriber_context: ?*anyopaque = null;
 var table: SurfaceTable = .{};
@@ -62,13 +62,13 @@ var thread: ?std.Thread = null;
 var wake_fd: sys.Fd = -1;
 
 pub fn current() Status {
-    const result: Status = @enumFromInt(status.load(.seq_cst));
+    const result: Status = @fromBackingInt(status.load(.seq_cst));
 
     return result;
 }
 
 pub fn set_status(value: Status) void {
-    status.store(@intFromEnum(value), .seq_cst);
+    status.store(@backingInt(value), .seq_cst);
 }
 
 pub fn is_open() bool {

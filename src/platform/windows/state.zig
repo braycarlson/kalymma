@@ -52,7 +52,7 @@ var controller: ?win32.HWND = null;
 var frames: FrameStore = .{};
 var guard: Mutex = .{};
 var queue: EventQueue = .{};
-var status: std.atomic.Value(u8) = std.atomic.Value(u8).init(@intFromEnum(Status.idle));
+var status: std.atomic.Value(u8) = std.atomic.Value(u8).init(@backingInt(Status.idle));
 var subscriber: ?EventCallback = null;
 var subscriber_context: ?*anyopaque = null;
 var table: SurfaceTable = .{};
@@ -68,13 +68,13 @@ pub fn unlock() void {
 }
 
 pub fn current() Status {
-    const result: Status = @enumFromInt(status.load(.seq_cst));
+    const result: Status = @fromBackingInt(status.load(.seq_cst));
 
     return result;
 }
 
 pub fn set_status(value: Status) void {
-    status.store(@intFromEnum(value), .seq_cst);
+    status.store(@backingInt(value), .seq_cst);
 }
 
 pub fn is_open() bool {

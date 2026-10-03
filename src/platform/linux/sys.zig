@@ -595,8 +595,8 @@ test "a socket path longer than the address is refused" {
     const fd = try unix_socket();
     defer close(fd);
 
-    const long = "x" ** path_bytes_max;
+    const long: [path_bytes_max]u8 = @splat('x');
 
-    try testing.expectError(Error.Failed, connect_path(fd, long));
+    try testing.expectError(Error.Failed, connect_path(fd, &long));
     try testing.expectError(Error.Failed, connect_path(fd, ""));
 }

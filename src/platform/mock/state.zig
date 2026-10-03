@@ -28,7 +28,7 @@ pub const Call = enum(u8) {
     unsubscribe = 8,
 };
 
-pub const call_count: u32 = @typeInfo(Call).@"enum".fields.len;
+pub const call_count: u32 = @typeInfo(Call).@"enum".field_names.len;
 
 comptime {
     assert(call_count == 9);
@@ -71,7 +71,7 @@ pub fn reset() void {
 }
 
 pub fn record(call: Call) void {
-    const index = @intFromEnum(call);
+    const index = @backingInt(call);
 
     assert(index < call_count);
 
@@ -79,7 +79,7 @@ pub fn record(call: Call) void {
 }
 
 pub fn count_of(call: Call) u32 {
-    const index = @intFromEnum(call);
+    const index = @backingInt(call);
 
     assert(index < call_count);
 

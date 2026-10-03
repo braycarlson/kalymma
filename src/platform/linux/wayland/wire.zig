@@ -261,9 +261,9 @@ test "over-long strings are refused before they reach the buffer" {
 
     writer.begin(1);
 
-    const long = "x" ** string_bytes_max;
+    const long: [string_bytes_max]u8 = @splat('x');
 
-    try testing.expectError(Error.StringTooLong, writer.put_string(long));
+    try testing.expectError(Error.StringTooLong, writer.put_string(&long));
 }
 
 test "a truncated buffer reports truncation rather than reading past the end" {
