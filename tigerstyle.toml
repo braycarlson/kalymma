@@ -1,0 +1,7 @@
+[extend-per-file-ignores]
+"src/platform/linux/display.zig" = ["TS005"]
+"src/platform/linux/state.zig" = ["TS005"]
+"src/platform/linux/wayland/client.zig" = ["TS005"]
+"src/platform/linux/x11/client.zig" = ["TS005"]
+"src/platform/mock/state.zig" = ["TS005"]
+"src/platform/windows/state.zig" = ["TS005"]
